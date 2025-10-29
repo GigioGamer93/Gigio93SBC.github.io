@@ -1,32 +1,174 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Liste giocatori FC26</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestione Giocatori</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 40px; }
-    h1 { color: #0077cc; }
-    table { border-collapse: collapse; width: 100%; background: white; margin-bottom: 30px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #eaeaea; }
+    :root {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --accent: #00c8ff;
+      --text: #f0f0f0;
+      --muted: #aaaaaa;
+    }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .search-bar {
+      margin: 15px 0;
+    }
+    input, button {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    input {
+      width: 250px;
+      background: var(--card);
+      color: var(--text);
+    }
+    input:focus {
+      outline: 2px solid var(--accent);
+    }
+    button {
+      cursor: pointer;
+      background-color: var(--accent);
+      color: #000;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #00a8dd;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+    .player-card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .muted {
+      color: var(--muted);
+    }
+    .delete-btn {
+      background: #ff3b3b;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .delete-btn:hover {
+      background: #ff5f5f;
+    }
+    form {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .footer {
+      margin-top: 30px;
+      color: var(--muted);
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
-  <h1>Le mie liste giocatori FC26</h1>
+  <h1>⚽ Gestione Giocatori</h1>
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="🔍 Cerca giocatore..." />
+  </div>
 
-  <h2>Squadra attuale</h2>
-  <table>
-    <tr><th>Giocatore</th><th>Ruolo</th><th>Valutazione</th></tr>
-    <tr><td>K. Mbappé</td><td>ATT</td><td>91</td></tr>
-    <tr><td>J. Bellingham</td><td>CEN</td><td>87</td></tr>
-  </table>
+  <form id="playerForm">
+    <input type="text" id="name" placeholder="Nome" required />
+    <input type="text" id="role" placeholder="Ruolo" required />
+    <input type="number" id="rating" placeholder="Valutazione" min="0" max="100" required />
+    <button type="submit">➕ Aggiungi</button>
+  </form>
 
-  <h2>Obiettivi futuri</h2>
-  <ul>
-    <li>Acquistare Haaland 92</li>
-    <li>Completare SBC Icona Prime</li>
-  </ul>
+  <div class="container" id="playerList"></div>
 
-  <p style="font-size:13px;color:#777;">Sito personale creato con GitHub Pages 💪</p>
+  <div class="footer">💾 Dati salvati in locale — <span class="muted">GitHub Pages ready</span></div>
+
+  <script>
+    const form = document.getElementById('playerForm');
+    const list = document.getElementById('playerList');
+    const search = document.getElementById('search');
+
+    let players = JSON.parse(localStorage.getItem('players')) || [];
+
+    function save() {
+      localStorage.setItem('players', JSON.stringify(players));
+    }
+
+    function render(filter = '') {
+      list.innerHTML = '';
+      const filtered = players.filter(p => 
+        p.name.toLowerCase().includes(filter.toLowerCase())
+      );
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="muted">Nessun giocatore trovato.</p>`;
+        return;
+      }
+      filtered.forEach((p, index) => {
+        const div = document.createElement('div');
+        div.className = 'player-card';
+        div.innerHTML = `
+          <div>
+            <strong>${p.name}</strong> <span class="muted">(${p.role})</span> — ⭐ ${p.rating}
+          </div>
+          <button class="delete-btn" data-index="${index}">✖</button>
+        `;
+        list.appendChild(div);
+      });
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const i = e.target.dataset.index;
+          players.splice(i, 1);
+          save();
+          render(search.value);
+        });
+      });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const role = document.getElementById('role').value.trim();
+      const rating = document.getElementById('rating').value.trim();
+      if (name && role && rating) {
+        players.push({ name, role, rating });
+        save();
+        form.reset();
+        render(search.value);
+      }
+    });
+
+    search.addEventListener('input', e => render(e.target.value));
+
+    render();
+  </script>
 </body>
 </html>

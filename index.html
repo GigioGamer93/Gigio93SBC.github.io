@@ -104,6 +104,8 @@
   <header>
     <button data-page="players">⚽ Giocatori</button>
     <button data-page="import">📤 Importa</button>
+    <button data-page="database">📚 Database Carte</button>
+    <button data-page="sbc">⚙️ SBC</button>
   </header>
 
   <!-- GIOCATORI -->
@@ -117,6 +119,7 @@
       <input type="text" id="nationality" placeholder="Nazionalità" />
       <input type="text" id="league" placeholder="Campionato" />
       <input type="text" id="club" placeholder="Club" />
+      <input type="text" id="rarity" placeholder="Rarità carta" />
       <input type="text" id="tradable" placeholder="Scambiabile (si/no)" />
       <button type="submit">➕ Aggiungi</button>
     </form>
@@ -128,7 +131,21 @@
     <h2>Importa Giocatori 📤</h2>
     <p>Carica un file <strong>.csv</strong> con una lista di giocatori.</p>
     <input type="file" id="fileInput" accept=".csv" />
-    <p class="muted">Formato richiesto: nome,valutazione,ruoli,nazionalità,campionato,club,scambiabile</p>
+    <p class="muted">Formato richiesto: nome,valutazione,ruoli,nazionalità,campionato,club,rarità,scambiabile</p>
+  </main>
+
+  <!-- DATABASE CARTE -->
+  <main id="database">
+    <h2>Database Carte 📚</h2>
+    <p>Carica il database delle carte dal tuo file CSV.</p>
+    <input type="file" id="databaseFileInput" accept=".csv" />
+    <p class="muted">Formato richiesto: nome,rarità,categoria</p>
+  </main>
+
+  <!-- SBC -->
+  <main id="sbc">
+    <h2>Gestione SBC ⚙️</h2>
+    <p>Qui puoi gestire le SBC (Squad Building Challenges). Funzionalità in arrivo!</p>
   </main>
 
   <footer>💾 Dati salvati in locale — <span class="muted">CSV import attivo</span></footer>
@@ -171,6 +188,7 @@
               ${p.nationality ? `🌍 ${p.nationality}<br>` : ''}
               ${p.league ? `🏆 ${p.league}<br>` : ''}
               ${p.club ? `🏟️ ${p.club}<br>` : ''}
+              ${p.rarity ? `💎 Rarità: ${p.rarity}<br>` : ''}
               ${p.tradable === true || p.tradable === 'si' ? '💰 Scambiabile' : '🔒 Non scambiabile'}
             </div>
           </div>
@@ -197,60 +215,4 @@
       const nationality = document.getElementById('nationality').value.trim();
       const league = document.getElementById('league').value.trim();
       const club = document.getElementById('club').value.trim();
-      const tradable = document.getElementById('tradable').value.trim().toLowerCase();
-      if (name && role && rating) {
-        players.push({
-          name,
-          role,
-          rating,
-          nationality,
-          league,
-          club,
-          tradable: tradable === 'si' || tradable === 'true'
-        });
-        save();
-        form.reset();
-        render(search.value);
-      }
-    });
-
-    search.addEventListener('input', e => render(e.target.value));
-    render();
-
-    // --- Importazione da CSV ---
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = event => {
-        const text = event.target.result;
-        const lines = text.trim().split('\n');
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-
-        players = lines.slice(1).map(line => {
-          const values = line.split(',').map(v => v.trim());
-          const obj = {};
-          headers.forEach((h, i) => obj[h] = values[i]);
-          return {
-            name: obj.nome || '',
-            rating: obj.valutazione || '',
-            role: obj.ruoli || '',
-            nationality: obj.nazionalità || '',
-            league: obj.campionato || '',
-            club: obj.club || '',
-            tradable: obj.scambiabile?.toLowerCase() === 'si' || obj.scambiabile === 'true'
-          };
-        });
-
-        save();
-        render();
-        alert('✅ Giocatori importati con successo!');
-      };
-
-      reader.readAsText(file);
-    });
-  </script>
-</body>
-</html>
+      const rarity = document.getElementById('rarity').value.trim
